@@ -29,6 +29,7 @@ def make_async_func(func):
     return wrapper
 
 
+@make_async_func
 def get_movie_info(movie_title):
     url = f"https://www.imdb.com/find?q={quote(movie_title)}"
     headers = {
@@ -56,13 +57,12 @@ def get_movie_info(movie_title):
         return None
 
 
+@make_async_func
 def get_rss_movie_info(rssName, rssUrl):
     movies = get_movie_details_from_rss(rssUrl)
     rssFeedMovieInfo = []
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        movie_infos = [
-            executor.submit(make_async_func(get_movie_info), movie) for movie in movies
-        ]
+        movie_infos = [executor.submit(get_movie_info, movie) for movie in movies]
         for movie_info in concurrent.futures.as_completed(movie_infos):
             rssFeedMovieInfo.append(movie_info.result())
     return {rssName: rssFeedMovieInfo}
@@ -77,7 +77,7 @@ if __name__ == "__main__":
         rssDict = json.load(rssFile)
     with concurrent.futures.ThreadPoolExecutor() as executor:
         rss_movie_infos = [
-            executor.submit(make_async_func(get_rss_movie_info), rssName, rssUrl)
+            executor.submit(get_rss_movie_info, rssName, rssUrl)
             for rssName, rssUrl in rssDict.items()
         ]
         for movie_info in concurrent.futures.as_completed(rss_movie_infos):
