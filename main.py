@@ -22,14 +22,6 @@ def get_movie_details_from_rss(rssUrl):
     return movies_names
 
 
-def make_async_func(func):
-    def wrapper(*args, **kwargs):
-        return func(*args, **kwargs)
-
-    return wrapper
-
-
-@make_async_func
 def get_movie_info(movie_title):
     url = f"https://www.imdb.com/find?q={quote(movie_title)}"
     headers = {
@@ -57,7 +49,6 @@ def get_movie_info(movie_title):
         return None
 
 
-@make_async_func
 def get_rss_movie_info(rssName, rssUrl):
     movies = get_movie_details_from_rss(rssUrl)
     rssFeedMovieInfo = []
