@@ -6,7 +6,7 @@ from urllib.parse import quote
 import feedparser
 import requests
 from bs4 import BeautifulSoup
-from jinja2 import Environment, FileSystemLoader  # pip install Jinja2
+from jinja2 import Environment, FileSystemLoader
 
 
 def get_movie_name_from_rss_string(rssStr):
@@ -16,14 +16,19 @@ def get_movie_name_from_rss_string(rssStr):
 def get_movie_details_from_rss(rssUrl):
     rssData = feedparser.parse(rssUrl)
     movies_names = {
-        get_movie_name_from_rss_string(movie.get("title"))
+        get_movie_name_from_rss_string(movie.get("title")): movie.get("links")
         for movie in rssData.get("entries")
+        if any(
+            True
+            for hdFormat in ["1080", "2160", "4K"]
+            if hdFormat in movie.get("title")
+        )
     }
     return movies_names
 
 
-def get_movie_info(movie_title):
-    url = f"https://www.imdb.com/find?q={quote(movie_title)}"
+def get_movie_info(movieTitle, movieDownloadLink):
+    url = f"https://www.imdb.com/find?q={quote(movieTitle)}"
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36"
     }
@@ -43,7 +48,12 @@ def get_movie_info(movie_title):
                 )
             ]
         )
-        movie = {"title": movie_title, "synopsis": synopsis, "cast": cast}
+        movie = {
+            "title": movieTitle,
+            "synopsis": synopsis,
+            "cast": cast,
+            "links": movieDownloadLink,
+        }
         return movie
     else:
         return None
@@ -53,7 +63,10 @@ def get_rss_movie_info(rssName, rssUrl):
     movies = get_movie_details_from_rss(rssUrl)
     rssFeedMovieInfo = []
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        movie_infos = [executor.submit(get_movie_info, movie) for movie in movies]
+        movie_infos = [
+            executor.submit(get_movie_info, movie, movieLink)
+            for movie, movieLink in movies.items()
+        ]
         for movie_info in concurrent.futures.as_completed(movie_infos):
             rssFeedMovieInfo.append(movie_info.result())
     return {rssName: rssFeedMovieInfo}
@@ -61,7 +74,7 @@ def get_rss_movie_info(rssName, rssUrl):
 
 if __name__ == "__main__":
     env = Environment(loader=FileSystemLoader("templates/"))
-    template = env.get_template("TableTemplate.html")  # the template file name
+    template = env.get_template("TableTemplate.html")
 
     allMovieInfo = {}
     with open("input/rssFeeds.json") as rssFile:
@@ -74,9 +87,9 @@ if __name__ == "__main__":
         for movie_info in concurrent.futures.as_completed(rss_movie_infos):
             allMovieInfo.update(movie_info.result())
 
-    with open("movies_data.json", "w") as mdj:
+    with open("moviesData.json", "w") as mdj:
         json.dump(allMovieInfo, mdj, indent=4)
 
     html = template.render(allMovieInfo=allMovieInfo)
-    with open("renderedHtml.html", "w") as renderedHtml:
+    with open("output/outputHtml.html", "w") as renderedHtml:
         renderedHtml.write(html)

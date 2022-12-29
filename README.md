@@ -1,47 +1,35 @@
-# Movie Info Scraper for Torrenting
+# Movie Info Scraper
 
-This is a Python script that scrapes movie information from IMDb using a list of RSS feeds and stores the information in a JSON file. The script also generates an HTML file using a Jinja2 template to display the movie information in a table format.
+This script is used to scrape movie information and download links from various RSS feeds and display them in an HTML table.
 
 ## Dependencies
 
--   Python 3.5 or higher
--   [feedparser](https://pypi.org/project/feedparser/)
--   [requests](https://pypi.org/project/requests/)
--   [beautifulsoup4](https://pypi.org/project/beautifulsoup4/)
--   [Jinja2](https://pypi.org/project/Jinja2/)
+The following libraries are required to run this script:
+
+-   `concurrent.futures`
+-   `json`
+-   `re`
+-   `urllib.parse`
+-   `feedparser`
+-   `requests`
+-   `bs4`
+-   `jinja2`
 
 ## Usage
 
-1.  Install the dependencies using pip:
+To use this script, follow these steps:
 
-    `pip install feedparser requests beautifulsoup4 Jinja2`
+1. Update the `input/rssFeeds.json` file with the desired RSS feed URLs. The format of this file should be a dictionary where the keys are the names of the RSS feeds and the values are the URLs.
 
-2.  Add the RSS feed URLs to the file in the directory. The file should have the following format: <br>
-    `{
-"RSS Feed Name": "RSS Feed URL",
-"Another RSS Feed": "Another RSS Feed URL"
-}`
+2. Run the script using `python main.py`.
 
-3.  Run the script: <br>
-    `python3 main.py`
+3. The script will scrape movie information and download links from the specified RSS feeds, and generate an HTML table displaying this information. The table will be saved in the `output` folder as `outputHtml.html`.
 
-The movie information will be stored in the file and the HTML file will be generated in the root directory as `renderedHtml.html`
+## Customization
 
-## Functions
+You can customize the appearance of the generated HTML table by modifying the `templates/TableTemplate.html` file. This file uses Jinja2 syntax to generate the table based on the movie data.
 
-The following functions are defined in the script:
+## Notes
 
--   `get_movie_name_from_rss_string(rssStr)`: Extracts the movie name from the RSS entry string.
--   `get_movie_details_from_rss(rssUrl)`: Returns a set of movie names from the RSS feed at the given URL.
--   `make_async_func(func)`: A decorator function that allows the given function to be used with the `concurrent.futures` module.
--   `get_movie_info(movie_title)`: Returns a dictionary containing the movie's title, synopsis, and a list of the top 5 cast members.
--   `get_rss_movie_info(rssName, rssUrl)`: Returns a dictionary of movie information for all movies in the RSS feed at the given URL.
-
-## Template
-
-The HTML template used to generate the table is stored in the directory as `TableTemplate.html` The template uses Jinja2 syntax to insert the movie information into the table.
-
-## TODO
-
--   Currently I am only retreiving the data from IMDB and showing it in the table. I plan on adding a new column in the table with a download link that either downloads the .torrent file or the magnet.
--   For movies with multiple format, logic to determine highest quality must be decided
+-   The script will only include movies with 1080p, 2160p, or 4K in the title in the generated table.
+-   The script will only include the first 5 actors for each movie in the generated table.
