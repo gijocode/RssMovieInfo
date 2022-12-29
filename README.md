@@ -1,4 +1,4 @@
-# Movie Info Scraper
+# Rss Movie Info Scraper
 
 This script is used to scrape movie information and download links from various RSS feeds and display them in an HTML table.
 
