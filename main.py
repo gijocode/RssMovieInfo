@@ -10,7 +10,14 @@ from jinja2 import Environment, FileSystemLoader
 
 
 def get_movie_name_from_rss_string(rssStr):
-    return re.split("\([1-3][0-9]{3}\)", rssStr)[0].strip()
+    match = re.match(r"(.+?)\s+\((\d+)\)", rssStr)
+    if match:
+        # Return the title and the year if the regular expression matched
+        x, y = match.group(1), match.group(2)
+        m = match.group()
+        return m
+    # Return the original string and None if the regular expression did not match
+    return ""
 
 
 def get_movie_details_from_rss(rssUrl):
