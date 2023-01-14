@@ -47,6 +47,10 @@ def get_movie_info(movieTitle, movieDownloadLink):
         movie_response = requests.get(movie_url, headers=headers)
         movie_soup = BeautifulSoup(movie_response.text, "html.parser")
         synopsis = movie_soup.find("span", attrs={"data-testid": "plot-l"}).text.strip()
+        poster = movie_soup.find("img", class_="ipc-image")["src"]
+        rating = movie_soup.find(
+            "div", attrs={"data-testid": "hero-rating-bar__aggregate-rating__score"}
+        ).next.text.strip()
         cast = ",".join(
             [
                 movie_actor.text
@@ -58,6 +62,8 @@ def get_movie_info(movieTitle, movieDownloadLink):
         movie = {
             "title": movieTitle,
             "synopsis": synopsis,
+            "rating": rating,
+            "poster": poster,
             "cast": cast,
             "links": movieDownloadLink,
         }
