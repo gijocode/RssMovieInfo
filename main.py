@@ -22,6 +22,7 @@ def get_movie_name_from_rss_string(rssStr):
 
 def get_movie_details_from_rss(rssUrl):
     rssData = feedparser.parse(rssUrl)
+    # Only consider movies that have torrents 1080p or above
     movies_names = {
         get_movie_name_from_rss_string(movie.get("title")): movie.get("links")
         for movie in rssData.get("entries")
@@ -48,9 +49,15 @@ def get_movie_info(movieTitle, movieDownloadLink):
         movie_soup = BeautifulSoup(movie_response.text, "html.parser")
         synopsis = movie_soup.find("span", attrs={"data-testid": "plot-l"}).text.strip()
         poster = movie_soup.find("img", class_="ipc-image")["src"]
-        rating = movie_soup.find(
-            "div", attrs={"data-testid": "hero-rating-bar__aggregate-rating__score"}
-        ).next.text.strip()
+        try:
+            rating = movie_soup.find(
+                "div", attrs={"data-testid": "hero-rating-bar__aggregate-rating__score"}
+            ).next.text.strip()
+        except Exception as e:
+            print(
+                f"Error encountered while scraping IMDB score for {movieTitle}, defaulting to NA"
+            )
+            rating = "NA"
         cast = ",".join(
             [
                 movie_actor.text
