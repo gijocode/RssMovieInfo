@@ -7,6 +7,10 @@ import feedparser
 import requests
 from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader
+import ssl
+
+if hasattr(ssl, "_create_unverified_context"):
+    ssl._create_default_https_context = ssl._create_unverified_context
 
 
 def get_movie_name_from_rss_string(rssStr):
@@ -82,7 +86,7 @@ def get_movie_info(movieTitle, movieDownloadLink):
 def get_rss_movie_info(rssName, rssUrl):
     movies = get_movie_details_from_rss(rssUrl)
     rssFeedMovieInfo = []
-    with concurrent.futures.ThreadPoolExecutor() as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
         movie_infos = [
             executor.submit(get_movie_info, movie, movieLink)
             for movie, movieLink in movies.items()
